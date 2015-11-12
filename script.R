@@ -9,6 +9,7 @@ rm(list=ls())
 
 #load libraries
 library(xlsx)
+library(lubridate)
 
 # define generic names and values 
 folder<-c('RPM','CT','EE') # name of the folders where datasets are present 
@@ -17,8 +18,13 @@ codes_pointer<-c('codes_RPM','codes_CT','codes_EE')
 
 #warning! check if the dates are updated 
 dates<-read.xlsx("~/Google Drive/Professional/Sense of Place/Data/surveydates.xlsx",1)
+dates$Start<-force_tz(dates$Start,tzone = "America/New_York")
+dates$End<-force_tz(dates$End,tzone = "America/New_York")
 
+#error report
+err_report<-data.frame()
 
+  
 for (i in 1:3)
 {
   
@@ -26,8 +32,8 @@ for (i in 1:3)
   setwd(paste0('~/Google Drive/Professional/Sense of Place/Data/Main Repository/',folder[i],'/Excel/'))
   
   #load file 
-  dataFile<-read.xlsx('Sheet_1.xls',1,as.data.frame = TRUE)
-  dataFile<-dataFile[-1,]
+  rawFile<-read.xlsx('Sheet_1.xls',1,as.data.frame = TRUE)
+  rawFile<-rawFile[-1,]
   
   
   
@@ -40,30 +46,54 @@ for (i in 1:3)
   dictionary<-read.xlsx('~/Google Drive/Professional/Sense of Place/Data/lexicons.xlsx',1)
   
   #rename colnames 
-  colnames(dataFile)<-dictionary[,codes_pointer[i]]
+  colnames(rawFile)<-dictionary[,codes_pointer[i]]
   
   
   #date preprocessing 
   
   #convert to dates 
   
-  dataFile$StartDate<-as.numeric(as.character(dataFile$StartDate))
-  dataFile$EndDate<-as.numeric(as.character(dataFile$EndDate))
+  rawFile$StartDate<-as.numeric(as.character(rawFile$StartDate))
+  rawFile$EndDate<-as.numeric(as.character(rawFile$EndDate))
   
   #converting start date 
-  dataFile$StartDate<-as.POSIXct(as.Date(dataFile$StartDate,"1899-12-30"),tz="GMT")
+  rawFile$StartDate<-as.POSIXct(as.Date(rawFile$StartDate,"1899-12-30"),tz="GMT")
   #timezone change
-  attr(dataFile$StartDate,"tzone")<-"UTC"
- 
+  attr(rawFile$StartDate,"tzone")<-"America/New_York"
   #converting end date 
-  dataFile$EndDate<-as.POSIXct(as.Date(dataFile$EndDate,"1899-12-30"),tz="GMT")
-  attr(dataFile$EndDate,"tzone")<-"UTC"
+  rawFile$EndDate<-as.POSIXct(as.Date(rawFile$EndDate,"1899-12-30"),tz="GMT")
+  attr(rawFile$EndDate,"tzone")<-"America/New_York"
+  
+  #filtering only the survey dates
+  datesubset<-subset(dates,Location==folder[i])
+  
+  
+  dateid<-NULL
+  for (j in 1:length(datesubset[,1])) 
+  {
+    id<-which((rawFile$StartDate >= datesubset$Start[j]) & 
+                         (rawFile$StartDate <= datesubset$End[j]))
+    dateid<-c(dateid,id)
+  }
+  err_report[1,i]<-length(rawFile$RespID)-length(dateid)
+  
+  
+  #checking for glitch
+  #if the last category name is empty then it is glitch 
+  glitchid<-which(is.na(rawFile$status))
+  err_report[2,i]<-length(glitchid)
   
   
   
+  
+  #ids to hold on 
+  idshold<-setdiff(dateid,glitchid) #removing glitches from the date id
+  
+  #create data file with ids to hold 
+  dataFile<-rawFile[idshold,]
   
   #choose only demographic variables 
-  demog_id<-which(dictionary$category=='demographics')
+  demog_id<-which(dictionary$category=='demographics') #demog_id
   demog_data<-dataFile[,c(1,demog_id)] #subset the demographics data 
   #list of all the summary
   summary<-list()
@@ -82,8 +112,9 @@ for (i in 1:3)
   
   
   #choose all travel variables
-  travel_id<-which(dictionary$category=='travel')
+  travel_id<-which(dictionary$category=='travel') #travel_id
   travel_data<-dataFile[,c(1,travel_id)]
+  
   
   summary<-list()
   for (j in 1:length(travel_id))
@@ -101,5 +132,10 @@ for (i in 1:3)
   
   
 }
+
+
+colnames(err_report)<-folder
+rownames(err_report)<-c('date','incomplete')
+write.csv(err_report,'err_in_rawdataset.csv')
 
 
