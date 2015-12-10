@@ -11,20 +11,31 @@ rm(list=ls())
 library(xlsx)
 library(lubridate)
 
+
+
+
+
 # define generic names and values 
 folder<-c('RPM','CT','EE') # name of the folders where datasets are present 
 outputwd<-c('~/Google Drive/Professional/Sense of Place/Data/Results')
 codes_pointer<-c('codes_RPM','codes_CT','codes_EE')
+
+
+
+
+
 
 #warning! check if the dates are updated 
 dates<-read.xlsx("~/Google Drive/Professional/Sense of Place/Data/surveydates.xlsx",1)
 dates$Start<-force_tz(dates$Start,tzone = "America/New_York")
 dates$End<-force_tz(dates$End,tzone = "America/New_York")
 
+
+
+
+
 #error report
 err_report<-data.frame()
-
-  
 for (i in 1:3)
 {
   
@@ -106,9 +117,9 @@ for (i in 1:3)
   
   
   #save as an excel file
-  lapply(names(summary), 
-         function(x) write.xlsx(summary[[x]], 
-                                paste0('SumStats_',folder[i],'_demog.xlsx'), sheetName=x, append=TRUE))
+  #lapply(names(summary), 
+  #       function(x) write.xlsx(summary[[x]], 
+  #                              paste0('SumStats_',folder[i],'_demog.xlsx'), sheetName=x, append=TRUE))
   
   
   #choose all travel variables
@@ -125,9 +136,9 @@ for (i in 1:3)
   
   
   #save as an excel file
-  lapply(names(summary), 
-         function(x) write.xlsx(summary[[x]], 
-                                paste0('SumStats_',folder[i],'_travel.xlsx'), sheetName=x, append=TRUE))
+  #lapply(names(summary), 
+         #function(x) write.xlsx(summary[[x]], 
+          #                      paste0('SumStats_',folder[i],'_travel.xlsx'), sheetName=x, append=TRUE))
   
   
   
@@ -136,6 +147,6 @@ for (i in 1:3)
 
 colnames(err_report)<-folder
 rownames(err_report)<-c('date','incomplete')
-write.csv(err_report,'err_in_rawdataset.csv')
+#write.csv(err_report,'err_in_rawdataset.csv')
 
 
