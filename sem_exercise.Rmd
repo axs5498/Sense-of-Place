@@ -1,0 +1,42 @@
+---
+title: "SEM_Exercise"
+date: "08/11/2016"
+author: "Ashok Sekar"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#use this chunk for making other global setting regarding figure size, figure captions etc. 
+```
+
+# Introduction 
+
+This document is about testing and performing Structural equation modeling with the Sense of Place(SOP) dataset. Earlier, factor analysis model for SOP was built that identified the significant dimentsions and indicators. Building on the factor model we build the SEM. 
+
+##Datasets 
+For this analysis we depend on two datasets named *mainFile*. The file contains both the attitudinal responses and socio-demographic characteristics. Note that for factor analysis the responses for dimensions were used. For SEM we would be using both SOP dimension and socio-demographic variables. 
+
+```{r datasetprep, include=TRUE, echo=FALSE, eval=TRUE}
+
+require(xlsx)
+ds<-read.xlsx("C:/Users/DIV/Google Drive/Professional/Sense of Place/Data/Results/mainFile.xlsx",1)
+
+workds
+
+
+```
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
