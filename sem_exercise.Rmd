@@ -15,20 +15,52 @@ knitr::opts_chunk$set(echo = TRUE)
 This document is about testing and performing Structural equation modeling with the Sense of Place(SOP) dataset. Earlier, factor analysis model for SOP was built that identified the significant dimentsions and indicators. Building on the factor model we build the SEM. 
 
 ##Datasets 
-For this analysis we depend on two datasets named *mainFile*. The file contains both the attitudinal responses and socio-demographic characteristics. Note that for factor analysis the responses for dimensions were used. For SEM we would be using both SOP dimension and socio-demographic variables. 
+For this analysis we depend on two datasets named *mainFile*. The file contains both the attitudinal responses and socio-demographic characteristics. Note that for factor analysis the responses for dimensions were used. For SEM we would be using both SOP dimension and socio-demographic variables. The mainFile was used to create two different files depending on how the missing values were treated. Numerous responses to SOP attitude questions were NA therefore we decided to convert the NA values to "4" being neutral. Note that NA means responders did not have any attitude towards that question. For the other file no changes were made. However, it is important to note that for our analysis we use the dataset that has NA values converted to 4. The code for the data preperation is not shown here. 
 
 ```{r datasetprep, include=TRUE, echo=FALSE, eval=TRUE}
 
 require(xlsx)
 ds<-read.xlsx("C:/Users/DIV/Google Drive/Professional/Sense of Place/Data/Results/mainFile.xlsx",1)
 
-workds<-
+# for the SOP dimension the NA values are converted to 4. 4 being neutral. the same exercise can be performed with missing values refer to Lavan tutorials
 
+#between column 8 to 34 convert the NA to 4 and convert the columns to number 
+
+workds<-ds
+for (i in 8:34)
+  {
+  workds[,i]<-as.numeric(as.character(workds[,i]))
+} 
+
+#converting the values to 4. 
+workds_NA4<-workds
+workds_NA4[,8:34][is.na(workds_NA4[,8:34])]<-4
+workds_NA<-workds #this is the dataset that contains NA values. 
 
 ```
 
-```{r cars}
-summary(cars)
+```{r sem_V1, include=TRUE, echo=TRUE, eval=TRUE}
+
+require(sem)
+require(DiagrammeR)
+require(semPlot)
+require(lavaan)
+
+workds_NA4$no_vehicle<-as.numeric(as.character(workds_NA4$no_vehicle))
+workds_NA4$no_drivers<-as.numeric(as.character(workds_NA4$no_drivers))
+
+model<-specifyModel(text = "
+  no_vehicle <- no_drivers, pi, NA
+  no_drivers<->no_drivers, var1, NA
+  no_vehicle<->no_vehicle, var2, NA"
+)
+
+#fitting the model 
+fit<-sem(model,data=workds_NA4[,c("no_vehicle","no_drivers")]) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPlot::semPaths(fit,whatLabels = "est",rotation = 2)
+
 ```
 
 ## Including Plots
