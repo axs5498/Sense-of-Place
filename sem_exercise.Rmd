@@ -22,7 +22,7 @@ For this analysis we depend on two datasets named *mainFile*. The file contains 
 require(xlsx)
 ds<-read.xlsx("C:/Users/DIV/Google Drive/Professional/Sense of Place/Data/Results/mainFile.xlsx",1)
 
-workds
+workds<-
 
 
 ```
