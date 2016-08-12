@@ -1,12 +1,20 @@
 ---
 title: "SEM_Exercise"
-date: "08/11/2016"
 author: "Ashok Sekar"
+date: "08/11/2016"
 output: pdf_document
+fig_caption: yes
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+require(knitr)
+require(xlsx)
+require(sem)
+require(DiagrammeR)
+require(semPlot)
+require(lavaan)
+
 #use this chunk for making other global setting regarding figure size, figure captions etc. 
 ```
 
@@ -17,9 +25,8 @@ This document is about testing and performing Structural equation modeling with 
 ##Datasets 
 For this analysis we depend on two datasets named *mainFile*. The file contains both the attitudinal responses and socio-demographic characteristics. Note that for factor analysis the responses for dimensions were used. For SEM we would be using both SOP dimension and socio-demographic variables. The mainFile was used to create two different files depending on how the missing values were treated. Numerous responses to SOP attitude questions were NA therefore we decided to convert the NA values to "4" being neutral. Note that NA means responders did not have any attitude towards that question. For the other file no changes were made. However, it is important to note that for our analysis we use the dataset that has NA values converted to 4. The code for the data preperation is not shown here. 
 
-```{r datasetprep, include=TRUE, echo=FALSE, eval=TRUE}
+```{r datasetprep, include=FALSE, echo=FALSE, eval=TRUE}
 
-require(xlsx)
 ds<-read.xlsx("C:/Users/DIV/Google Drive/Professional/Sense of Place/Data/Results/mainFile.xlsx",1)
 
 # for the SOP dimension the NA values are converted to 4. 4 being neutral. the same exercise can be performed with missing values refer to Lavan tutorials
@@ -37,38 +44,187 @@ workds_NA4<-workds
 workds_NA4[,8:34][is.na(workds_NA4[,8:34])]<-4
 workds_NA<-workds #this is the dataset that contains NA values. 
 
+
+#note to switch the indicators that are negative into posititive. e.g., bad area. 
+
 ```
 
-```{r sem_V1, include=TRUE, echo=TRUE, eval=TRUE}
+#Factor Analysis Results 
+As discussed earlier, we use the results from factor analysis to start building the simple structural equation models. For simplicity, we look at the final factor structure for RPM, which is given in Figure 1. Based on the figure we know of the 6 dimensions dependence and identity does not explain the factor structure. Therefore indicators associated with those dimensions are not necessary. Additionally, many other indicators of each dimensions present in SOP structure are missing, which are also unnecessary. In the *workingFile* generated to do the analysis, the indicators are removed and structures are set based on the factor structure shown in the figure. 
 
-require(sem)
-require(DiagrammeR)
-require(semPlot)
-require(lavaan)
+The indicators to be included for RPM are: 
+
+1. Social: friend, family, atmosphere
+2. Satisfaction: food, amenities, entertainment, people, motor vehicle parking, bicycle parking, bike/walking access, transit access. 
+3. Attachment: happy, dissapointed, connected
+4. Aesthetics: architecture, artistic, beau 
+
+In addition if any indicators are negatively worded are switched to positive. 
+
+![Factor Structure for Rochester Public Market](FactorStructure_RPM.png)
+
+
+
+```{r factsummary, echo=FALSE, fig.height=4, fig.width=7}
+
+ColNamesRPM<-c("food","amn","ent","ppl","mopark","bipark","biwalk_access","trnst_access","happy","disapp","connect","arch","artistic","beau","friendly","family","atmos")
+
+sat_RPM<-c("food","amn","ent","ppl","mopark","bipark","biwalk_access","trnst_access")
+soc_RPM<-c("friendly","family","atmos")
+aes_RPM<-c("arch","artistic","beau")
+att_RPM<-c("happy","disapp","connect")
+FacStr_RPM<-c(sat_RPM,soc_RPM,aes_RPM,att_RPM)
+
+
+demog<-c("gender","age","no_hhmem","emp_ft","child","relationHHmem","inc","yearsinROC")
+
+travel<-c("mode","biwalk","alone","fam_imm","fam_ext","friend","colleague","students","mentor","org",
+          "no_vehicle","no_drivers","no_bicycles")
+
+
+```
+
+#Simple Model 1: 
+
+This is my first experimental model using *SEM* package. I used SEM package because it seemed easy to set arrows with this package. This is followed by using Lavaan based *semPlot* package for visualizing the path diagram. In this simple model, a regression model is set up between number of vehicles in a household and the number of drivers with valid driver's license. The estimate is saved as the variable *pi* and the variance are recorded as *var1* and *var2*. Because we are using the *SEM* package the factor structure for RPM is again evaluated using *SEM* package. The same result was identified. To keep the document simple I have not added the results below.  
+
+```{r sem_V1, include=TRUE, echo=TRUE, eval=TRUE,fig.cap="Strucytre of a Simple SEM",fig.height=2,fig.width=7}
+
 
 workds_NA4$no_vehicle<-as.numeric(as.character(workds_NA4$no_vehicle))
 workds_NA4$no_drivers<-as.numeric(as.character(workds_NA4$no_drivers))
 
 model<-specifyModel(text = "
-  no_vehicle <- no_drivers, pi, NA
+  no_vehicle -> no_drivers, pi, NA
   no_drivers<->no_drivers, var1, NA
   no_vehicle<->no_vehicle, var2, NA"
 )
 
 #fitting the model 
-fit<-sem(model,data=workds_NA4[,c("no_vehicle","no_drivers")]) #data should contain only necessary variables.
+fit<-sem::sem(model,data=workds_NA4[,c("no_vehicle","no_drivers")]) #data should contain only necessary variables.
 
 #pathDiagram(fit,edge.labels = "both",style = "ram")
-semPlot::semPaths(fit,whatLabels = "est",rotation = 2)
+semPaths(fit,whatLabels = "est",rotation = 2)
+summary(fit)
 
 ```
 
-## Including Plots
+```{r factorverification, include=FALSE, echo=TRUE, eval=TRUE,fig.cap="Factor Structure of RPM for verification with Figure 1",fig.height=4,fig.width=7}
 
-You can also embed plots, for example:
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+factormodel_RPM<-specifyModel(text = "
+  sat -> food, NA, 1
+  sat -> amn, pi2, NA
+  sat -> ent, pi3, NA
+  sat -> ppl, pi4, NA
+  sat -> mopark, pi5, NA
+  sat -> bipark, pi6, NA
+  sat -> biwalk_access,pi7, NA
+  sat -> trnst_access, pi8, NA
+  sat <-> sat, var1, NA
+  food <-> food, si1, NA
+  amn <-> amn, si2, NA
+  ent <-> ent, si3, NA
+  ppl <-> ppl, si4, NA
+  mopark <-> mopark, si5, NA
+  bipark <-> bipark, si6, NA
+  biwalk_access <-> biwalk_access, si7, NA 
+  trnst_access <-> trnst_access, si8, NA
+
+  soc -> friendly, pi9, NA
+  soc -> family, pi10, NA
+  soc -> atmos, NA, 1
+  soc <-> soc, var2, NA
+  friendly <-> friendly, si9, NA
+  family <-> family, si10, NA
+  atmos <-> atmos, si11, NA
+
+  aes -> beau, NA, 1
+  aes -> arch, pi11, NA
+  aes -> artistic, p12, NA
+  aes <-> aes, var3, NA
+  beau <-> beau, si12, NA
+  arch <-> arch, si13, NA
+  artistic <-> artistic, si14, NA
+
+  att -> connect, NA, 1
+  att -> disapp, p13, NA
+  att -> happy, p14, NA
+  att <-> att, var4, NA
+  connect <-> connect, si15, NA
+  disapp <-> disapp, si16, NA
+  happy <-> happy, si17, NA
+
+  RPM -> sat, gam1, NA
+  RPM -> soc, gam2, NA
+  RPM -> aes, NA, 1
+  RPM -> att, gam3, NA 
+  RPM <-> RPM, var0, NA
+  "
+)
+
+newds<-workds_NA4[1:134,FacStr_RPM]
+
+#fitting the model 
+fit1<-sem::sem(factormodel_RPM,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(factormodel_RPM,labels="both",style = "ram")
+semPaths(fit1,whatLabels = "est",rotation = 2)
+#summary(fit1)
+
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+#Simple SEM Model 
+
+Given, that we have been able to write down a regression model and confirm the factor model, we now proceed to establish a simple structural equation model. 
+
+```{r sem1, include=TRUE, eval=TRUE, fig.cap="Simple SEM model based on satisfaction", fig.height=4,fig.width=7}
+
+sem1<-specifyModel(text = "
+  sat -> food, NA, 1
+  sat -> amn, pi2, NA
+  sat -> ent, pi3, NA
+  sat -> ppl, pi4, NA
+  sat -> mopark, pi5, NA
+  sat -> bipark, pi6, NA
+  sat -> biwalk_access,pi7, NA
+  sat -> trnst_access, pi8, NA
+  sat <-> sat, var1, NA
+  food <-> food, si1, NA
+  amn <-> amn, si2, NA
+  ent <-> ent, si3, NA
+  ppl <-> ppl, si4, NA
+  mopark <-> mopark, si5, NA
+  bipark <-> bipark, si6, NA
+  biwalk_access <-> biwalk_access, si7, NA 
+  trnst_access <-> trnst_access, si8, NA
+  
+  female -> sat, di1, NA
+  female <-> female, s19, NA
+  
+  #sat -> age_le25
+  #age_le25<-
+  #age_25to35<-
+
+  
+
+  "
+  )
+
+gender<-model.matrix(~gender - 1,data = workds_NA4)
+female<-gender[1:134,2]
+
+newds<-workds_NA4[1:134,sat_RPM]
+newds<-cbind(newds,female)
+
+#fitting the model 
+fit2<-sem::sem(sem1,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPaths(fit2,whatLabels = "est",rotation = 2)
+summary(fit2)
+
+
+```
+
+
