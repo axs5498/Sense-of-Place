@@ -1,0 +1,30 @@
+sat -> food, NA, 1
+sat -> amn, pi2, NA
+sat -> ent, pi3, NA
+sat -> ppl, pi4, NA
+sat -> mopark, pi5, NA
+sat -> bipark, pi6, NA
+sat -> biwalk_access,pi7, NA
+sat -> trnst_access, pi8, NA
+sat <-> sat, var1, NA
+food <-> food, si1, NA
+amn <-> amn, si2, NA
+ent <-> ent, si3, NA
+ppl <-> ppl, si4, NA
+mopark <-> mopark, si5, NA
+bipark <-> bipark, si6, NA
+biwalk_access <-> biwalk_access, si7, NA 
+trnst_access <-> trnst_access, si8, NA
+  
+#Demographic Variables 
+female -> sat, di1, NA
+female <-> female, s19, NA
+age_le25 -> sat, di2, NA
+age_25to35 -> sat, di3, NA
+age_le25 <-> age_le25, s20, NA
+age_25to35 <-> age_25to35, s21, NA
+  
+
+  
+
+  "

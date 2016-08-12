@@ -23,7 +23,9 @@ require(lavaan)
 This document is about testing and performing Structural equation modeling with the Sense of Place(SOP) dataset. Earlier, factor analysis model for SOP was built that identified the significant dimentsions and indicators. Building on the factor model we build the SEM. 
 
 ##Datasets 
-For this analysis we depend on two datasets named *mainFile*. The file contains both the attitudinal responses and socio-demographic characteristics. Note that for factor analysis the responses for dimensions were used. For SEM we would be using both SOP dimension and socio-demographic variables. The mainFile was used to create two different files depending on how the missing values were treated. Numerous responses to SOP attitude questions were NA therefore we decided to convert the NA values to "4" being neutral. Note that NA means responders did not have any attitude towards that question. For the other file no changes were made. However, it is important to note that for our analysis we use the dataset that has NA values converted to 4. The code for the data preperation is not shown here. 
+For this analysis we depend on a dataset named *mainFile*. The file contains both the attitudinal responses, travel and socio-demographic characteristics. Note that for factor analysis the attitudinal responses for dimensions were used. For SEM we would be using attitudinal responses, travel and socio-demographic variables. 
+
+The mainFile was used to create two different files depending on how the missing values were treated. Numerous responses to SOP attitude questions were NA therefore we decided to convert the NA values to "4" being neutral. Note that NA means responders did not have any attitude towards that question. For the other file no changes were made. However, it is important to note that for our analysis we use the dataset that has NA values converted to 4. The code for the data preperation is not shown here. 
 
 ```{r datasetprep, include=FALSE, echo=FALSE, eval=TRUE}
 
@@ -78,17 +80,127 @@ FacStr_RPM<-c(sat_RPM,soc_RPM,aes_RPM,att_RPM)
 
 demog<-c("gender","age","no_hhmem","emp_ft","child","relationHHmem","inc","yearsinROC")
 
-travel<-c("mode","biwalk","alone","fam_imm","fam_ext","friend","colleague","students","mentor","org",
+#creating seperate variable for each demographic characteristics 
+gender<-model.matrix(~gender - 1,data = workds_NA4)
+male<-gender[,3]
+female<-gender[,2]
+gender_DtoA<-gender[,1]
+
+age<-model.matrix(~age-1,data = workds_NA4)
+age_le25 <- age[,1]
+age_25to35 <- age[,2]
+age_35to45 <- age[,3]
+age_45to54 <- age[,4]
+age_55to64 <- age[,5]
+age_65to75 <- age[,6]
+age_ge75 <- age[,7]
+
+no_hhmem<-model.matrix(~no_hhmem - 1, data = workds_NA4)
+hhmem_1<-no_hhmem[,1]
+hhmem_2<-no_hhmem[,2]
+hhmem_3<-no_hhmem[,3]
+hhmem_4<-no_hhmem[,4]
+hhmem_5ormore<-no_hhmem[,5]
+hhmem_DtoA<-no_hhmem[,6]
+
+emp_ft<-model.matrix(~emp_ft - 1, data = workds_NA4)
+emp_ft_1<-emp_ft[,1]
+emp_ft_2<-emp_ft[,2]
+emp_ft_3<-emp_ft[,3]
+emp_ft_4<-emp_ft[,4]
+emp_ft_5ormore<-emp_ft[,5]
+emp_ft_DtoA<-emp_ft[,6]
+
+child<-model.matrix(~child - 1, data = workds_NA4)
+child_1<-child[,1]
+child_2<-child[,2]
+child_3<-child[,3]
+child_4ormore<-child[,4]
+child_DtoA<-child[,5]
+
+rltnHHmem<-model.matrix(~relationHHmem - 1, data = workds_NA4)
+rltnHHmem_alone<-rltnHHmem[,1]
+rltnHHmem_friends<-rltnHHmem[,2]
+rltnHHmem_family<-rltnHHmem[,3]
+rltnHHmem_extfamily<-rltnHHmem[,4]
+rltnHHmem_acquaintances<-rltnHHmem[,5]
+
+
+inc<-model.matrix(~inc - 1, data = workds_NA4)
+inc_le25k<-inc[,1]
+inc_100kto125k<-inc[,2]
+inc_125kto150k<-inc[,3]
+inc_150kto175k<-inc[,4]
+inc_175kto200k<-inc[,5]
+inc_ge200k<-inc[,6]
+inc_25kto50k<-inc[,7]
+inc_50kto75k<-inc[,8]
+inc_75kto100k<-inc[,9]
+inc_DtoA<-inc[,10]
+
+
+yearsinROC<-model.matrix(~yearsinROC - 1, data = workds_NA4)
+years_1to5 <- yearsinROC[,1]
+years_6to10 <- yearsinROC[,2]
+years_DtoAyears<-yearsinROC[,3]
+notfromRoc<-yearsinROC[,4]
+years_le1<-yearsinROC[,5]
+years_ge10<-yearsinROC[,6]
+
+
+
+
+travel<-c("visit","mode","biwalk","alone","fam_imm","fam_ext","friend","colleague","students","mentor","org",
           "no_vehicle","no_drivers","no_bicycles")
 
+#Creating variable for each travel characteristic 
+visit<-model.matrix(~visit - 1, data = workds_NA4)
+everyday<-visit[,1]
+leonceamonth<-visit[,2]
+onceamonth<-visit[,3]
+onceaweek<-visit[,4]
+onceinthreeweeks<-visit[,5]
+onceintwoweeks<-visit[,6]
+threeormoretimesaweek<-visit[,7]
+twiceaweek<-visit[,8]
+
+
+mode<-model.matrix(~mode - 1, data = workds_NA4)
+bike<-mode[,1]
+carpool<-mode[,2]
+personalvehicle<-mode[,3]
+publictransit<-mode[,4]
+walk<-mode[,5]
+
+biwalk<-model.matrix(~biwalk - 1, data = workds_NA4)
+biwalk.none<-biwalk[,1]
+biwalk.lemonth<-biwalk[,2]
+biwalk.oncemonth<-biwalk[,3]
+biwalk.onceweek<-biwalk[,4]
+biwalk.oncein3weeks<-biwalk[,5]
+biwalk.oncein2weeks<-biwalk[,6]
+biwalk.threeormoreaweek<-biwalk[,7]
+biwalk.twiceaweek<-biwalk[,8]
+
+
+no_bicycles<-model.matrix(~no_bicycles - 1, data = workds_NA4)
+bike_1<-no_bicycles[,1]
+bike_2<-no_bicycles[,2]
+bike_3<-no_bicycles[,3]
+bike_4<-no_bicycles[,4]
+bike_ge5<-no_bicycles[,5]
+
+
+#alone<-ifelse(workds_NA4$alone=="None",1,0)
+#alone<-ifelse(workds_NA4$alone=="NA",0,1)
 
 ```
 
-#Simple Model 1: 
+#Experimental Model: 
 
 This is my first experimental model using *SEM* package. I used SEM package because it seemed easy to set arrows with this package. This is followed by using Lavaan based *semPlot* package for visualizing the path diagram. In this simple model, a regression model is set up between number of vehicles in a household and the number of drivers with valid driver's license. The estimate is saved as the variable *pi* and the variance are recorded as *var1* and *var2*. Because we are using the *SEM* package the factor structure for RPM is again evaluated using *SEM* package. The same result was identified. To keep the document simple I have not added the results below.  
 
-```{r sem_V1, include=TRUE, echo=TRUE, eval=TRUE,fig.cap="Strucytre of a Simple SEM",fig.height=2,fig.width=7}
+```{r sem_V1, include=FALSE, echo=TRUE, eval=TRUE,fig.cap="Strucytre of a Simple SEM",fig.height=2,fig.width=7}
 
 
 workds_NA4$no_vehicle<-as.numeric(as.character(workds_NA4$no_vehicle))
@@ -174,57 +286,89 @@ semPaths(fit1,whatLabels = "est",rotation = 2)
 
 ```
 
-#Simple SEM Model 
+#RPM
+The following section documents the experiments to find the factor structure for RPM. We test for significance of each demographic variable with one sense of place dimension before moving to the other dimensions. Based on the results from the combination of tests a final model for RPM will be presented. 
 
-Given, that we have been able to write down a regression model and confirm the factor model, we now proceed to establish a simple structural equation model. 
+List of dimensions and the factor structure are already discussed earlier. Check Figure 1.  
+ 
+##Satisfaction - AGE
 
-```{r sem1, include=TRUE, eval=TRUE, fig.cap="Simple SEM model based on satisfaction", fig.height=4,fig.width=7}
+The figure below (Figure 3) shows the only significant model for age in satisfaction structure of RPM. Trail and error method was used to identify the significant variable. 
 
-sem1<-specifyModel(text = "
-  sat -> food, NA, 1
-  sat -> amn, pi2, NA
-  sat -> ent, pi3, NA
-  sat -> ppl, pi4, NA
-  sat -> mopark, pi5, NA
-  sat -> bipark, pi6, NA
-  sat -> biwalk_access,pi7, NA
-  sat -> trnst_access, pi8, NA
-  sat <-> sat, var1, NA
-  food <-> food, si1, NA
-  amn <-> amn, si2, NA
-  ent <-> ent, si3, NA
-  ppl <-> ppl, si4, NA
-  mopark <-> mopark, si5, NA
-  bipark <-> bipark, si6, NA
-  biwalk_access <-> biwalk_access, si7, NA 
-  trnst_access <-> trnst_access, si8, NA
-  
-  female -> sat, di1, NA
-  female <-> female, s19, NA
-  
-  #sat -> age_le25
-  #age_le25<-
-  #age_25to35<-
+```{r rpmsatage, include=FALSE, eval=FALSE, fig.cap="Simple SEM model based on satisfaction", fig.height=4,fig.width=7}
 
-  
+#dataset for analysis 
+newds<-workds_NA4[,sat_RPM]
+newds<-cbind(newds,age_35to45)# age_le25,age_55to64,age_45to54,age_35to45,age_25to35,age_65to75)
+newds<-newds[1:134,]
 
-  "
-  )
-
-gender<-model.matrix(~gender - 1,data = workds_NA4)
-female<-gender[1:134,2]
-
-newds<-workds_NA4[1:134,sat_RPM]
-newds<-cbind(newds,female)
-
+model.RPM.sat.age<-specifyModel("model_RPM_sat_age1.R") 
 #fitting the model 
-fit2<-sem::sem(sem1,data=newds) #data should contain only necessary variables.
+fit.RPM.sat.age<-sem::sem(model.RPM.sat.age,data=newds) #data should contain only necessary variables.
 
 #pathDiagram(fit,edge.labels = "both",style = "ram")
-semPaths(fit2,whatLabels = "est",rotation = 2)
-summary(fit2)
-
+semPaths(fit.RPM.sat.age,whatLabels = "est",rotation = 2)
+summary(fit.RPM.sat.age)
 
 ```
 
+##Satisfaction - Gender
+Follow the same procedure as above but for gender. However gender was not a significant variable therefore they will not be included. 
 
+```{r rpmsatgender, include=TRUE, echo=FALSE, eval=TRUE, fig.cap="SEM model for RPM with satisfaction and age between 35 to 45", fig.height=4,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,sat_RPM]
+newds<-cbind(newds,age_35to45,female)
+newds<-newds[1:134,]
+
+model.RPM.sat.gender<-specifyModel(text = "#Satisfaction Structure Model 
+sat -> food, NA, 1
+sat -> amn, pi2, NA
+sat -> ent, pi3, NA
+sat -> ppl, pi4, NA
+sat -> mopark, pi5, NA 
+sat -> bipark, pi6, NA
+sat -> biwalk_access,pi7, NA
+sat -> trnst_access, pi8, NA
+sat <-> sat, var1, NA
+food <-> food, err1, NA
+amn <-> amn, err2, NA
+ent <-> ent, err3, NA
+ppl <-> ppl, err4, NA
+mopark <-> mopark, err5, NA
+bipark <-> bipark, err6, NA
+biwalk_access <-> biwalk_access, err7, NA 
+trnst_access <-> trnst_access, err8, NA
+
+#age
+age_35to45 -> sat, fi4, NA
+age_35to45 <-> age_35to45, err22, NA") 
+#fitting the model 
+fit.RPM.sat.gender<-sem::sem(model.RPM.sat.gender,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPaths(fit.RPM.sat.gender,whatLabels = "est",rotation = 2)
+summary(fit.RPM.sat.gender)
+
+```
+
+##Satisfaction - How long did the visitor live in rochester
+In this experiment all the variables were found insignificant **unfortunately**. 
+
+```{r rpmsatyearsinROC, include=FALSE, eval=FALSE, fig.cap="Simple SEM model based on satisfaction", fig.height=4,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,sat_RPM]
+newds<-cbind(newds,age_35to45, years_DtoAyears)
+newds<-newds[1:134,]
+
+model.RPM.sat.gender<-specifyModel("model_RPM_sat_yearsinROC.R") 
+#fitting the model 
+fit.RPM.sat.gender<-sem::sem(model.RPM.sat.gender,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPaths(fit.RPM.sat.gender,whatLabels = "est",rotation = 2)
+summary(fit.RPM.sat.gender)
+
+```
