@@ -104,19 +104,21 @@ hhmem_5ormore<-no_hhmem[,5]
 hhmem_DtoA<-no_hhmem[,6]
 
 emp_ft<-model.matrix(~emp_ft - 1, data = workds_NA4)
-emp_ft_1<-emp_ft[,1]
-emp_ft_2<-emp_ft[,2]
-emp_ft_3<-emp_ft[,3]
-emp_ft_4<-emp_ft[,4]
-emp_ft_5ormore<-emp_ft[,5]
-emp_ft_DtoA<-emp_ft[,6]
+emp_ft_0<-emp_ft[,1]
+emp_ft_1<-emp_ft[,2]
+emp_ft_2<-emp_ft[,3]
+emp_ft_3<-emp_ft[,4]
+emp_ft_4<-emp_ft[,5]
+emp_ft_5ormore<-emp_ft[,6]
+emp_ft_DtoA<-emp_ft[,7]
 
 child<-model.matrix(~child - 1, data = workds_NA4)
-child_1<-child[,1]
-child_2<-child[,2]
-child_3<-child[,3]
-child_4ormore<-child[,4]
-child_DtoA<-child[,5]
+child_0<-child[,1]
+child_1<-child[,2]
+child_2<-child[,3]
+child_3<-child[,4]
+child_4ormore<-child[,5]
+child_DtoA<-child[,6]
 
 rltnHHmem<-model.matrix(~relationHHmem - 1, data = workds_NA4)
 rltnHHmem_alone<-rltnHHmem[,1]
@@ -302,27 +304,7 @@ newds<-workds_NA4[,sat_RPM]
 newds<-cbind(newds,age_35to45)# age_le25,age_55to64,age_45to54,age_35to45,age_25to35,age_65to75)
 newds<-newds[1:134,]
 
-model.RPM.sat.age<-specifyModel("model_RPM_sat_age1.R") 
-#fitting the model 
-fit.RPM.sat.age<-sem::sem(model.RPM.sat.age,data=newds) #data should contain only necessary variables.
-
-#pathDiagram(fit,edge.labels = "both",style = "ram")
-semPaths(fit.RPM.sat.age,whatLabels = "est",rotation = 2)
-summary(fit.RPM.sat.age)
-
-```
-
-##Satisfaction - Gender
-Follow the same procedure as above but for gender. However gender was not a significant variable therefore they will not be included. 
-
-```{r rpmsatgender, include=TRUE, echo=FALSE, eval=TRUE, fig.cap="SEM model for RPM with satisfaction and age between 35 to 45", fig.height=4,fig.width=7}
-
-#dataset for analysis 
-newds<-workds_NA4[,sat_RPM]
-newds<-cbind(newds,age_35to45,female)
-newds<-newds[1:134,]
-
-model.RPM.sat.gender<-specifyModel(text = "#Satisfaction Structure Model 
+model.RPM.sat.age<-specifyModel(text = "#Satisfaction Structure Model 
 sat -> food, NA, 1
 sat -> amn, pi2, NA
 sat -> ent, pi3, NA
@@ -343,7 +325,27 @@ trnst_access <-> trnst_access, err8, NA
 
 #age
 age_35to45 -> sat, fi4, NA
-age_35to45 <-> age_35to45, err22, NA") 
+age_35to45 <-> age_35to45, err22, NA")  
+#fitting the model 
+fit.RPM.sat.age<-sem::sem(model.RPM.sat.age,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPaths(fit.RPM.sat.age,whatLabels = "est",rotation = 2)
+summary(fit.RPM.sat.age)
+
+```
+
+##Satisfaction - Gender
+Follow the same procedure as above but for gender. However gender was not a significant variable therefore they will not be included. 
+
+```{r rpmsatgender, include=FALSE, echo=FALSE, eval=FALSE, fig.cap="SEM model for RPM with satisfaction and age between 35 to 45", fig.height=4,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,sat_RPM]
+newds<-cbind(newds,age_35to45,female)
+newds<-newds[1:134,]
+
+model.RPM.sat.gender<-specifyModel("model_RPM_sat_gender.R") 
 #fitting the model 
 fit.RPM.sat.gender<-sem::sem(model.RPM.sat.gender,data=newds) #data should contain only necessary variables.
 
@@ -363,12 +365,242 @@ newds<-workds_NA4[,sat_RPM]
 newds<-cbind(newds,age_35to45, years_DtoAyears)
 newds<-newds[1:134,]
 
-model.RPM.sat.gender<-specifyModel("model_RPM_sat_yearsinROC.R") 
+model.RPM.sat.yearsinROC<-specifyModel("model_RPM_sat_yearsinROC.R") 
 #fitting the model 
-fit.RPM.sat.gender<-sem::sem(model.RPM.sat.gender,data=newds) #data should contain only necessary variables.
+fit.RPM.sat.yearsinROC<-sem::sem(model.RPM.sat.yearsinROC,data=newds) #data should contain only necessary variables.
 
 #pathDiagram(fit,edge.labels = "both",style = "ram")
-semPaths(fit.RPM.sat.gender,whatLabels = "est",rotation = 2)
-summary(fit.RPM.sat.gender)
+semPaths(fit.RPM.sat.yearsinROC,whatLabels = "est",rotation = 2)
+summary(fit.RPM.sat.yearsinROC)
+
+```
+
+##Satisfaction - Income
+None of the income variables were significant. Although some of the income groups were close to significance with $z value ~= 1.4$. 
+
+```{r rpmsatincome, include=FALSE, eval=FALSE,echo=FALSE, fig.cap="Simple SEM model based on satisfaction", fig.height=4,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,sat_RPM]
+newds<-cbind(newds,age_35to45,inc_le25k)
+             #inc_75kto100k,inc_ge200k,inc_50kto75k,inc_25kto50k,inc_175kto200k,
+            #inc_100kto125k,inc_125kto150k,inc_150kto175k, inc_DtoA) 
+
+newds<-newds[1:134,]
+
+model.RPM.sat.income<-specifyModel("model_RPM_sat_income.R") 
+#fitting the model 
+fit.RPM.sat.income<-sem::sem(model.RPM.sat.income,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPaths(fit.RPM.sat.income,whatLabels = "est",rotation = 2)
+summary(fit.RPM.sat.income)
+
+```
+
+##Satisfaction - number of household members 
+Notes: there seems to be an interactio nbetween *hhmem_1* and *hhmem_2*. When running the model seperately with *hhmem_1* we get a significant value for *hhmem_1*. When I run *hhmem_1* and*hhmem_2* together *hhmem_1* becomes insignificant, while *hhmem_2* is significant. when i run *hhmem_2* seperately, *hhmem_2* is significant. In addition to these two values *hhmem_5ormore* was also significant. When i ran a model with *hhmem_2 and hhmem_5* together *hhmem_5ormore* became insignificant. Therefore from this point forward variable *hhmem_2* will be included while the other two that were significant independently will be given further inspection later.  
+
+```{r rpmsatnoHHmem, include=FALSE, eval=TRUE,echo=FALSE, fig.cap="Simple SEM model based on satisfaction", fig.height=4,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,sat_RPM]
+newds<-cbind(newds,age_35to45, hhmem_2)
+             #hhmem_1, hhmem_2, hhmem_3, hhmem_4, hhmem_5ormore, hhmem_DtoA
+
+newds<-newds[1:134,]
+
+model.RPM.sat.noHHmem<-specifyModel(text = "
+#Satisfaction Structure Model 
+sat -> food, NA, 1
+sat -> amn, pi2, NA
+sat -> ent, pi3, NA
+sat -> ppl, pi4, NA
+sat -> mopark, pi5, NA 
+sat -> bipark, pi6, NA
+sat -> biwalk_access,pi7, NA
+sat -> trnst_access, pi8, NA
+sat <-> sat, var1, NA
+food <-> food, err1, NA
+amn <-> amn, err2, NA
+ent <-> ent, err3, NA
+ppl <-> ppl, err4, NA
+mopark <-> mopark, err5, NA
+bipark <-> bipark, err6, NA
+biwalk_access <-> biwalk_access, err7, NA 
+trnst_access <-> trnst_access, err8, NA
+
+#age
+age_35to45 -> sat, fi4, NA
+age_35to45 <-> age_35to45, err22, NA
+
+#no_hhmem
+# hhmem_1 -> sat,fi27, NA
+ hhmem_2 -> sat,fi28, NA 
+# hhmem_3 -> sat,fi29, NA
+# hhmem_4 -> sat,fi30, NA
+# hhmem_5ormore -> sat,fi31, NA
+# hhmem_DtoA -> sat,fi32, NA
+
+# hhmem_1 <-> hhmem_1, err43, NA
+ hhmem_2 <-> hhmem_2, err44, NA
+# hhmem_3 <-> hhmem_3, err45, NA
+# hhmem_4 <-> hhmem_4, err46, NA
+# hhmem_5ormore <-> hhmem_5ormore, err47, NA
+") 
+
+
+#fitting the model 
+fit.RPM.sat.noHHmem<-sem::sem(model.RPM.sat.noHHmem,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPaths(fit.RPM.sat.noHHmem,whatLabels = "est",rotation = 2)
+summary(fit.RPM.sat.noHHmem)
+
+```
+
+
+##Satisfaction - number of household members employed full time employed 
+In this experiment people with 1 fulltime employed household member seemed to be a signifcant indicator of satisfaction. 
+
+```{r rpmsatempft, include=FALSE, eval=TRUE, echo=FALSE, fig.cap="Simple SEM model based on satisfaction", fig.height=4,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,sat_RPM]
+newds<-cbind(newds,age_35to45,hhmem_2, emp_ft_1)
+             #emp_ft_0,emp_ft_1, emp_ft_2, emp_ft_3, emp_ft_4, emp_ft_5ormore, emp_ft_DtoA
+
+newds<-newds[1:134,]
+
+model.RPM.sat.empft<-specifyModel(text = "#Satisfaction Structure Model 
+sat -> food, NA, 1
+sat -> amn, pi2, NA
+sat -> ent, pi3, NA
+sat -> ppl, pi4, NA
+sat -> mopark, pi5, NA 
+sat -> bipark, pi6, NA
+sat -> biwalk_access,pi7, NA
+sat -> trnst_access, pi8, NA
+sat <-> sat, var1, NA
+food <-> food, err1, NA
+amn <-> amn, err2, NA
+ent <-> ent, err3, NA
+ppl <-> ppl, err4, NA
+mopark <-> mopark, err5, NA
+bipark <-> bipark, err6, NA
+biwalk_access <-> biwalk_access, err7, NA 
+trnst_access <-> trnst_access, err8, NA
+
+#age
+age_35to45 -> sat, fi4, NA
+age_35to45 <-> age_35to45, err22, NA
+
+#no_hhmem
+hhmem_2 -> sat,fi28, NA 
+hhmem_2 <-> hhmem_2, err44, NA
+
+#emp_ft
+# emp_ft_0 -> sat, fi33, NA # zvalue 1.4
+ emp_ft_1 -> sat, fi34, NA
+# emp_ft_0 <-> emp_ft_0, err49, NA
+ emp_ft_1 <-> emp_ft_1, err50, NA
+
+") 
+#fitting the model 
+fit.RPM.sat.empft<-sem::sem(model.RPM.sat.empft,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPaths(fit.RPM.sat.empft,whatLabels = "est",rotation = 2)
+summary(fit.RPM.sat.empft)
+```
+
+##Satisfaction - number of children in household  
+In this experiment no significant variables were found. 
+
+```{r rpmsatchild, include=FALSE, eval=FALSE, fig.cap="Simple SEM model based on satisfaction", fig.height=4,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,sat_RPM]
+newds<-cbind(newds,age_35to45,hhmem_2, emp_ft_1, child_1)
+             #child_0,child_1, child_2, child_3, child_4ormore, child_DtoA
+
+newds<-newds[1:134,]
+
+model.RPM.sat.child<-specifyModel("model_RPM_sat_child.R") 
+#fitting the model 
+fit.RPM.sat.child<-sem::sem(model.RPM.sat.child,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPaths(fit.RPM.sat.child,whatLabels = "est",rotation = 2)
+summary(fit.RPM.sat.child)
+
+```
+
+##Satisfaction - realtionship with household members  
+In this experiment people who were living immedialtely with family were significant in explaining satisfaction. 
+
+##Final Model 
+The final modEL structure is show below as Figure below. The summary statistics also provided. 
+![Final Model RPM Satisfaction and Demographic Variables](Final_RPM_Sat_Demog)
+
+```{r rpmsatrelation, include=TRUE, eval=TRUE,echo=FALSE, fig.cap="Final Model for RPM Satisfaction and demographic variables", fig.height=7,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,sat_RPM]
+newds<-cbind(newds,age_35to45,hhmem_2, emp_ft_1,rltnHHmem_family)
+             #rltnHHmem_acquaintances,rltnHHmem_extfamily,rltnHHmem_family,
+             #rltnHHmem_friends,rltnHHmem_alone
+
+newds<-newds[1:134,]
+
+model.RPM.sat.relation<-specifyModel(text="#Satisfaction Structure Model 
+sat -> food, NA, 1
+sat -> amn, pi2, NA
+sat -> ent, pi3, NA
+sat -> ppl, pi4, NA
+sat -> mopark, pi5, NA 
+sat -> bipark, pi6, NA
+sat -> biwalk_access,pi7, NA
+sat -> trnst_access, pi8, NA
+sat <-> sat, var1, NA
+food <-> food, err1, NA
+amn <-> amn, err2, NA
+ent <-> ent, err3, NA
+ppl <-> ppl, err4, NA
+mopark <-> mopark, err5, NA
+bipark <-> bipark, err6, NA
+biwalk_access <-> biwalk_access, err7, NA 
+trnst_access <-> trnst_access, err8, NA
+
+#Demographics
+#age
+age_35to45 -> sat, fi4, NA
+age_35to45 <-> age_35to45, err22, NA
+#no_hhmem
+hhmem_2 -> sat,fi28, NA 
+hhmem_2 <-> hhmem_2, err44, NA
+#emp_ft
+emp_ft_1 -> sat, fi34, NA
+emp_ft_1 <-> emp_ft_1, err50, NA
+
+#relation with HHMEM
+# rltnHHmem_acquaintances -> sat, fi46, NA
+# rltnHHmem_alone -> sat, fi47, NA
+# rltnHHmem_extfamily -> sat, fi48, NA
+ rltnHHmem_family -> sat, fi49, NA
+# rltnHHmem_friends -> sat, fi50, NA
+
+#rltnHHmem_acquaintances <-> rltnHHmem_acquaintances, err62, NA
+# rltnHHmem_alone <-> rltnHHmem_alone, err63, NA
+# rltnHHmem_extfamily <-> rltnHHmem_extfamily, err64, NA
+ rltnHHmem_family <-> rltnHHmem_family, err65, NA
+# rltnHHmem_friends <-> rltnHHmem_friends, err66, NA
+") 
+#fitting the model 
+fit.RPM.sat.relation<-sem::sem(model.RPM.sat.relation,data=newds) #data should contain only necessary variables.
+
+pathDiagram(fit.RPM.sat.relation,edge.labels = "both",style = "ram")
+#semPaths(fit.RPM.sat.relation,whatLabels = "est",rotation = 2)
+summary(fit.RPM.sat.relation)
 
 ```
