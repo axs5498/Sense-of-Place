@@ -671,7 +671,7 @@ The final modEL structure is show below as Figure below. The summary statistics 
 newds<-workds_NA4[,sat_RPM]
 newds<-cbind(newds,age_35to45,hhmem_2, emp_ft_1, rltnHHmem_family, threeormoretimesaweek, publictransit,
              biwalk.threeormoreaweek, biwalk.onceweek)
-             
+RPM.sat.vars<-c("age_35to45","hhmem_2", "emp_ft_1", "rltnHHmem_family", "threeormoretimesaweek", "publictransit","biwalk.threeormoreaweek", "biwalk.onceweek")             
 newds<-newds[1:134,]
 
 model.RPM.sat.biwalk<-specifyModel(text = "#Satisfaction Structure Model 
@@ -1026,6 +1026,7 @@ newds<-workds_NA4[,att_RPM]
 newds<-cbind(newds,age_55to64,age_45to54,notfromRoc,hhmem_5ormore,emp_ft_3,onceaweek,leonceamonth,bike,
              biwalk.none,biwalk.threeormoreaweek,biwalk.oncein3weeks)
              
+RPM.att.vars<-c("age_55to64","age_45to54","notfromRoc","hhmem_5ormore","emp_ft_3","onceaweek","leonceamonth","bike","biwalk.none","biwalk.threeormoreaweek","biwalk.oncein3weeks")
 newds<-newds[1:134,]
 
 model.RPM.att.biwalk<-specifyModel(text = "#Factor Structure
@@ -1354,7 +1355,7 @@ The final modEL structure is show below as Figure below. The summary statistics 
 #dataset for analysis 
 newds<-workds_NA4[,aes_RPM]
 newds<-cbind(newds,female,inc_100kto125k,inc_125kto150k,rltnHHmem_acquaintances,onceintwoweeks,biwalk.oncemonth)
-             
+RPM.aes.vars<-c("female","inc_100kto125k","inc_125kto150k","rltnHHmem_acquaintances","onceintwoweeks","biwalk.oncemonth")             
 newds<-newds[1:134,]
 
 model.RPM.aes.biwalk<-specifyModel(text = "#Factor Structure
@@ -1408,3 +1409,327 @@ summary(fit.RPM.aes.biwalk)
 
 
 
+
+#Rochester Public Market - Social 
+This section shows the final model for RPM aesthetics 
+Coding Notes: Always change the *att* to *soc* in the *model_RPM_att_XXX* file.
+
+## Demographic Variables  
+###Social - Age
+Significant variables - None
+
+```{r rpmsocage, include=FALSE, eval=FALSE, fig.cap="Simple SEM model based on satisfaction", fig.height=4,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,soc_RPM]
+newds<-cbind(newds,age_ge75)
+# age_le25,age_55to64,age_45to54,age_35to45,age_25to35,age_65to75, age_ge75)
+
+newds<-newds[1:134,]
+
+model.RPM.soc.age<-specifyModel("model_RPM_soc_age.R")  
+#fitting the model 
+fit.RPM.soc.age<-sem::sem(model.RPM.soc.age,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPaths(fit.RPM.soc.age,whatLabels = "est",rotation = 2)
+summary(fit.RPM.soc.age)
+
+```
+
+###Social - Gender
+No variables were significant  
+```{r rpmsocgender, include=FALSE, echo=FALSE, eval=FALSE, fig.cap="SEM model for RPM with satisfaction and age between 35 to 45", fig.height=4,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,soc_RPM]
+newds<-cbind(newds,male)
+newds<-newds[1:134,]
+
+model.RPM.soc.gender<-specifyModel("model_RPM_soc_gender.R") 
+#fitting the model 
+fit.RPM.soc.gender<-sem::sem(model.RPM.soc.gender,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPaths(fit.RPM.soc.gender,whatLabels = "est",rotation = 2)
+summary(fit.RPM.soc.gender)
+
+```
+
+###Social - How long did the visitor live in rochester
+None were significant. 
+```{r rpmsocyearsinROC, include=FALSE, eval=FALSE, fig.cap="Simple SEM model based on satisfaction", fig.height=4,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,soc_RPM]
+newds<-cbind(newds,
+             years_ge10)
+
+#years_1to5 , years_6to10, years_DtoAyears, notfromRoc, years_le1, years_ge10
+
+newds<-newds[1:134,]
+
+model.RPM.soc.yearsinROC<-specifyModel("model_RPM_soc_yearsinROC.R") 
+#fitting the model 
+fit.RPM.soc.yearsinROC<-sem::sem(model.RPM.soc.yearsinROC,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPaths(fit.RPM.soc.yearsinROC,whatLabels = "est",rotation = 2)
+summary(fit.RPM.soc.yearsinROC)
+
+```
+
+###Social - Income
+variables *inc_50kto75k and inc_75kto100k* were close to significane. 
+Significant variables *inc_100kto125k,inc_125kto150k*
+```{r rpmsocincome, include=FALSE, eval=FALSE,echo=FALSE, fig.cap="Simple SEM model based on satisfaction", fig.height=4,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,soc_RPM]
+newds<-cbind(newds,inc_DtoA)
+             #inc_75kto100k,inc_ge200k,inc_50kto75k,inc_25kto50k,inc_175kto200k,
+            #inc_100kto125k,inc_125kto150k,inc_150kto175k, inc_DtoA,inc_le25k) 
+
+newds<-newds[1:134,]
+
+model.RPM.soc.income<-specifyModel("model_RPM_soc_income.R") 
+#fitting the model 
+fit.RPM.soc.income<-sem::sem(model.RPM.soc.income,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPaths(fit.RPM.soc.income,whatLabels = "est",rotation = 2)
+summary(fit.RPM.soc.income)
+
+```
+
+###Social - Number of household members 
+again...no variables were significant 
+```{r rpmsocnoHHmem, include=FALSE, eval=FALSE,echo=FALSE, fig.cap="Simple SEM model based on satisfaction", fig.height=4,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,soc_RPM]
+newds<-cbind(newds,hhmem_5ormore)
+             #hhmem_1, hhmem_2, hhmem_3, hhmem_4, hhmem_5ormore, hhmem_DtoA
+
+newds<-newds[1:134,]
+
+model.RPM.soc.noHHmem<-specifyModel("model_RPM_soc_noHHmem.R") 
+
+#fitting the model 
+fit.RPM.soc.noHHmem<-sem::sem(model.RPM.soc.noHHmem,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPaths(fit.RPM.soc.noHHmem,whatLabels = "est",rotation = 2)
+summary(fit.RPM.soc.noHHmem)
+
+```
+
+
+###Social - Number of household members employed full time employed 
+No variables were significant. SOMETHING IS PROBABLY WRONG. COULD IT BE INSIGNIFICENT VARIANCE OF *FRIENDLY* VARIABLE?
+```{r rpmsocempft, include=FALSE, eval=FALSE, echo=FALSE, fig.cap="Simple SEM model based on satisfaction", fig.height=4,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,soc_RPM]
+newds<-cbind(newds,emp_ft_DtoA)
+             #emp_ft_0,emp_ft_1, emp_ft_2, emp_ft_3, emp_ft_4, emp_ft_5ormore, emp_ft_DtoA
+
+newds<-newds[1:134,]
+
+model.RPM.soc.empft<-specifyModel("model_RPM_soc_empft.R") 
+#fitting the model 
+fit.RPM.soc.empft<-sem::sem(model.RPM.soc.empft,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPaths(fit.RPM.soc.empft,whatLabels = "est",rotation = 2)
+summary(fit.RPM.soc.empft)
+```
+
+###Social - Number of children in household  
+*child_3* was the first variable to significant however there was the following warning message $Warning message:In eval(expr, envir, enclos) : Negative parameter variances.
+Model may be underidentified.$
+```{r rpmsocchild, include=FALSE, eval=FALSE, fig.cap="Simple SEM model based on satisfaction", fig.height=4,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,soc_RPM]
+newds<-cbind(newds,child_DtoA)
+             #child_0,child_1, child_2, child_3, child_4ormore, child_DtoA
+
+newds<-newds[1:134,]
+
+model.RPM.soc.child<-specifyModel("model_RPM_soc_child.R") 
+#fitting the model 
+fit.RPM.soc.child<-sem::sem(model.RPM.soc.child,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPaths(fit.RPM.soc.child,whatLabels = "est",rotation = 2)
+summary(fit.RPM.soc.child)
+
+```
+
+###Social - Relationship with household members  
+No significant variables.
+```{r rpmsocrelation, include=FALSE, eval=FALSE,echo=FALSE, fig.cap="Final Model for RPM Satisfaction and demographic variables", fig.height=7,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,soc_RPM]
+newds<-cbind(newds,rltnHHmem_friends)
+             #rltnHHmem_acquaintances,rltnHHmem_alone, rltnHHmem_extfamily,rltnHHmem_family,
+             #rltnHHmem_friends
+
+newds<-newds[1:134,]
+
+model.RPM.soc.relation<-specifyModel("model_RPM_soc_relation.R") 
+#fitting the model 
+fit.RPM.soc.relation<-sem::sem(model.RPM.soc.relation,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit.RPM.soc.relation,edge.labels = "both",style = "ram")
+semPaths(fit.RPM.soc.relation,whatLabels = "est",rotation = 2)
+summary(fit.RPM.soc.relation)
+
+```
+
+## Travel Variables 
+Now I am experimenting with the travel variables. Compared to demographics there are only few travel related variables viz., 
+
+*vist - how often people visited a location.  
+*mode - what mode did they use? 
+*biwalk - have they ever biked or walked to the location
+*no_vehicles - number of vehicles at their home.  
+*no_drivers - number of drivers at their home. 
+*no_bicylces - number of bicylces at home 
+* several variables indicating with whom they traveled to the location on day of interview
+
+Of all the *travel* related variables discussed above, few of them could be informed by SOP dimension. For e.g., *mode, visit, biwalk*. While they also can be informed by other variables such as distance from home, number of vehicles and drivers using a simple regression. To not complicate the modeling exercise I will currently perform test the significance of the the variables *mode, visit, biwalk*. Because satisfaction, as a latent variable is already being informed by numerous satisfaction responses these travel variables will not affect the existing satisfaction factor structure.  
+
+###Social - Visit
+Significant variables: **None**
+```{r rpmsocvisit, include=FALSE, eval=FALSE, fig.cap="Simple SEM model based on satisfaction", fig.height=4,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,soc_RPM]
+newds<-cbind(newds,leonceamonth)
+             #everyday, #onceamonth, #onceaweek,# onceinthreeweeks, # onceintwoweeks, 
+             #threeormoretimesaweek, # twiceaweek, #leonceamonth
+
+newds<-newds[1:134,]
+
+model.RPM.soc.visit<-specifyModel("model_RPM_soc_visit.R") 
+#fitting the model 
+fit.RPM.soc.visit<-sem::sem(model.RPM.soc.visit,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPaths(fit.RPM.soc.visit,whatLabels = "est",rotation = 2)
+summary(fit.RPM.soc.visit)
+
+```
+
+###Social - Mode
+*personalvehicle* very close to being significant at z value = 1.5. No other variables were significant. 
+```{r rpmsocmode, include=FALSE, eval=FALSE, fig.cap="Simple SEM model based on satisfaction", fig.height=4,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,soc_RPM]
+newds<-cbind(newds,walk)
+            #bike, carpool, publictransit, personalvehicle, walk
+             
+newds<-newds[1:134,]
+
+model.RPM.soc.mode<-specifyModel("model_RPM_soc_mode.R") 
+#fitting the model 
+fit.RPM.soc.mode<-sem::sem(model.RPM.soc.mode,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPaths(fit.RPM.soc.mode,whatLabels = "est",rotation = 2)
+summary(fit.RPM.soc.mode)
+
+```
+
+###Social - Cycle or Walk in Summer
+only significant variable *biwalk.oncein2weeks*
+```{r rpmsocbiwalk, include=FALSE, eval=FALSE, fig.cap="Simple SEM model based on satisfaction", fig.height=4,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,soc_RPM]
+newds<-cbind(newds,biwalk.oncein2weeks)
+             #biwalk.none, biwalk.lemonth, biwalk.oncemonth, biwalk.onceweek, biwalk.oncein2weeks, biwalk.oncein3weeks, biwalk.threeormoreaweek, biwalk.twiceaweek,  
+             #   
+             
+newds<-newds[1:134,]
+
+model.RPM.soc.biwalk<-specifyModel("model_RPM_soc_biwalk.R") 
+#fitting the model 
+fit.RPM.soc.biwalk<-sem::sem(model.RPM.soc.biwalk,data=newds) #data should contain only necessary variables.
+
+#pathDiagram(fit,edge.labels = "both",style = "ram")
+semPaths(fit.RPM.soc.biwalk,whatLabels = "est",rotation = 2)
+summary(fit.RPM.soc.biwalk)
+
+```
+
+
+## Final Model for RPM. Relationship between Social, travel and demographic variables
+
+
+The final modEL structure is show below as Figure below. The summary statistics also provided. 
+![Final Model RPM Relationship between Social, travel and demographic variables](Final_RPM_Soc_Demog_Travel)
+
+```{r rpmsocfinal, include=TRUE, eval=TRUE,echo=FALSE, fig.cap="Final Model for RPM relation Social to demographics and travel", fig.height=7,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,soc_RPM]
+newds<-cbind(newds,biwalk.oncein2weeks)
+             
+newds<-newds[1:134,]
+
+model.RPM.soc.biwalk<-specifyModel(text = "
+#Social Structure Model
+soc -> friendly, pi9, NA
+soc -> family, pi10, NA
+soc -> atmos, NA, 1
+soc <-> soc, var2, NA
+friendly <-> friendly, err9, NA
+family <-> family, err10, NA
+atmos <-> atmos, err11, NA
+
+#travel
+#biwalk
+ biwalk.oncein2weeks<-soc, ti19, NA
+ biwalk.oncein2weeks<->biwalk.oncein2weeks, err85, NA
+
+") 
+#fitting the model 
+fit.RPM.soc.biwalk<-sem::sem(model.RPM.soc.biwalk,data=newds) #data should contain only necessary variables.
+
+pathDiagram(fit.RPM.soc.biwalk,edge.labels = "both",style = "ram")
+#semPaths(fit.RPM.sat.biwalk,whatLabels = "est",rotation = 2)
+summary(fit.RPM.soc.biwalk)
+
+RPM.soc.vars<-c("biwalk.oncein2weeks")
+
+```
+
+
+
+
+#Final Model for RPM
+```{r rpmfinal, include=TRUE, eval=TRUE,echo=FALSE, fig.cap="Final Model for RPM", fig.height=7,fig.width=7}
+
+#dataset for analysis 
+newds<-workds_NA4[,c(att_RPM,aes_RPM,sat_RPM,soc_RPM)]
+RPM.vars<-unique(c(RPM.soc.vars,RPM.aes.vars,RPM.att.vars,RPM.sat.vars))
+newds<-cbind(newds,biwalk.oncein2weeks,female,inc_100kto125k,inc_125kto150k, rltnHHmem_acquaintances,onceintwoweeks, biwalk.oncemonth,  age_55to64,  age_45to54, notfromRoc, hhmem_5ormore, emp_ft_3, onceaweek, leonceamonth, bike, biwalk.none, biwalk.threeormoreaweek, biwalk.oncein3weeks, age_35to45, hhmem_2, emp_ft_1, rltnHHmem_family, threeormoretimesaweek, publictransit, biwalk.onceweek)
+
+
+newds<-newds[1:134,]
+
+model.RPM.final<-specifyModel("model_RPM_v1.R") 
+#fitting the model 
+fit.RPM.final<-sem::sem(model.RPM.final,data=newds) #data should contain only necessary variables.
+
+png("RPM_final.png", width = 4, height = 7, units = 'in', res = 2000)
+pathDiagram(fit.RPM.final,edge.labels = "both",style = "ram")
+dev.off()
+
+#semPaths(fit.RPM.sat.final,whatLabels = "est",rotation = 2)
+summary(fit.RPM.final)
