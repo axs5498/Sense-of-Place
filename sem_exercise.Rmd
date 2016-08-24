@@ -84,6 +84,9 @@ age_45to54 <- age[,4]
 age_55to64 <- age[,5]
 age_65to75 <- age[,6]
 age_ge75 <- age[,7]
+age_le45 <- abs(rowSums(cbind(age[,1],age[,2],age[,3])))
+age_45to65 <- abs(rowSums(cbind(age[,4],age[,5])))
+
 
 no_hhmem<-model.matrix(~no_hhmem - 1, data = workds_NA4)
 hhmem_1<-no_hhmem[,1]
@@ -93,6 +96,11 @@ hhmem_4<-no_hhmem[,4]
 hhmem_5ormore<-no_hhmem[,5]
 hhmem_DtoA<-no_hhmem[,6]
 
+hhmem_2ormore<-abs(rowSums(cbind(hhmem_1))-1)
+hhmem_3ormore<-abs(rowSums(cbind(hhmem_1,hhmem_2))-1)
+
+
+
 emp_ft<-model.matrix(~emp_ft - 1, data = workds_NA4)
 emp_ft_0<-emp_ft[,1]
 emp_ft_1<-emp_ft[,2]
@@ -101,6 +109,10 @@ emp_ft_3<-emp_ft[,4]
 emp_ft_4<-emp_ft[,5]
 emp_ft_5ormore<-emp_ft[,6]
 emp_ft_DtoA<-emp_ft[,7]
+#newvariable
+emp_2ormore<-abs(rowSums(cbind(emp_ft[,1],emp_ft_2))-1)
+emp_1ormore<-abs(emp_ft_0-1)
+
 
 child<-model.matrix(~child - 1, data = workds_NA4)
 child_0<-child[,1]
@@ -129,6 +141,8 @@ inc_25kto50k<-inc[,7]
 inc_50kto75k<-inc[,8]
 inc_75kto100k<-inc[,9]
 inc_DtoA<-inc[,10]
+inc_ge100k<-cbind(inc_100kto125k,inc_125kto150k,inc_175kto200k,inc_ge200k) #generating new bins 
+inc_ge100k<-rowSums(inc_ge100k)
 
 
 yearsinROC<-model.matrix(~yearsinROC - 1, data = workds_NA4)
@@ -155,7 +169,10 @@ onceinthreeweeks<-visit[,5]
 onceintwoweeks<-visit[,6]
 threeormoretimesaweek<-visit[,7]
 twiceaweek<-visit[,8]
-
+#weekly<-rowSums(cbind(everyday,onceaweek,twiceaweek,threeormoretimesaweek)) #generating new bins 
+morethanonceaweek<-rowSums(cbind(everyday,twiceaweek,threeormoretimesaweek,everyday))
+oneweekto1month<-abs(rowSums(cbind(onceaweek,onceamonth,onceinthreeweeks,onceintwoweeks)))
+atleastonceamonth<-abs(rowSums(cbind(leonceamonth))-1)
 
 mode<-model.matrix(~mode - 1, data = workds_NA4)
 bike<-mode[,1]
@@ -173,6 +190,10 @@ biwalk.oncein3weeks<-biwalk[,5]
 biwalk.oncein2weeks<-biwalk[,6]
 biwalk.threeormoreaweek<-biwalk[,7]
 biwalk.twiceaweek<-biwalk[,8]
+#generating new bins
+biwalk.yes<-abs(biwalk.none-1) #generating new bins 0
+biwalk.gtonceamonth<-rowSums(cbind(biwalk.none,biwalk.lemonth,biwalk.oncemonth)) #generating new bins
+biwalk.gtonceamonth<-abs(biwalk.atleastonceamonth-1) #generating new bins
 
 
 no_bicycles<-model.matrix(~no_bicycles - 1, data = workds_NA4)
@@ -442,45 +463,12 @@ In this experiment people with 1 fulltime employed household member seemed to be
 
 #dataset for analysis 
 newds<-workds_NA4[,sat_RPM]
-newds<-cbind(newds,age_35to45,hhmem_2, emp_ft_1)
+newds<-cbind(newds,age_35to45,hhmem_2, emp_2ormore)
              #emp_ft_0,emp_ft_1, emp_ft_2, emp_ft_3, emp_ft_4, emp_ft_5ormore, emp_ft_DtoA
 
 newds<-newds[1:134,]
 
-model.RPM.sat.empft<-specifyModel(text = "#Satisfaction Structure Model 
-sat -> food, NA, 1
-sat -> amn, pi2, NA
-sat -> ent, pi3, NA
-sat -> ppl, pi4, NA
-sat -> mopark, pi5, NA 
-sat -> bipark, pi6, NA
-sat -> biwalk_access,pi7, NA
-sat -> trnst_access, pi8, NA
-sat <-> sat, var1, NA
-food <-> food, err1, NA
-amn <-> amn, err2, NA
-ent <-> ent, err3, NA
-ppl <-> ppl, err4, NA
-mopark <-> mopark, err5, NA
-bipark <-> bipark, err6, NA
-biwalk_access <-> biwalk_access, err7, NA 
-trnst_access <-> trnst_access, err8, NA
-
-#age
-age_35to45 -> sat, fi4, NA
-age_35to45 <-> age_35to45, err22, NA
-
-#no_hhmem
-hhmem_2 -> sat,fi28, NA 
-hhmem_2 <-> hhmem_2, err44, NA
-
-#emp_ft
-# emp_ft_0 -> sat, fi33, NA # zvalue 1.4
- emp_ft_1 -> sat, fi34, NA
-# emp_ft_0 <-> emp_ft_0, err49, NA
- emp_ft_1 <-> emp_ft_1, err50, NA
-
-") 
+model.RPM.sat.empft<-specifyModel("model_RPM_sat_empft.R") 
 #fitting the model 
 fit.RPM.sat.empft<-sem::sem(model.RPM.sat.empft,data=newds) #data should contain only necessary variables.
 
@@ -596,7 +584,7 @@ Responders who visited RPM all the three days a week are satisfied. For all othe
 
 #dataset for analysis 
 newds<-workds_NA4[,sat_RPM]
-newds<-cbind(newds,age_35to45,hhmem_2, emp_ft_1, rltnHHmem_family, threeormoretimesaweek)
+newds<-cbind(newds,age_35to45,hhmem_2, emp_ft_1, rltnHHmem_family, morethanonceaweek)
              #everyday, #onceamonth, #onceaweek,# onceinthreeweeks, # onceintwoweeks, 
              #threeormoretimesaweek, # twiceaweek, #leonceamonth
 
@@ -947,7 +935,7 @@ Significant variables: *once a week and less than once a month*
 
 #dataset for analysis 
 newds<-workds_NA4[,att_RPM]
-newds<-cbind(newds,age_55to64,age_45to54,notfromRoc,hhmem_5ormore,emp_ft_3,onceaweek,leonceamonth)
+newds<-cbind(newds,age_55to64,age_45to54,notfromRoc,hhmem_5ormore,emp_ft_3,weekly)
              #everyday, #onceamonth, #onceaweek,# onceinthreeweeks, # onceintwoweeks, 
              #threeormoretimesaweek, # twiceaweek, #leonceamonth
 
@@ -1154,12 +1142,12 @@ summary(fit.RPM.aes.yearsinROC)
 ```
 
 ###Aesthetics - Income
-Significant variables *inc_100kto125k,inc_125kto150k*
+Significant variables *inc_100kto125k,inc_125kto150k*. They were converted into a single variables *inc_ge100k* which was significant
 ```{r rpmaesincome, include=FALSE, eval=FALSE,echo=FALSE, fig.cap="Simple SEM model based on satisfaction", fig.height=4,fig.width=7}
 
 #dataset for analysis 
 newds<-workds_NA4[,aes_RPM]
-newds<-cbind(newds,female,inc_100kto125k,inc_125kto150k)
+newds<-cbind(newds,female,inc_ge100k)
              #inc_75kto100k,inc_ge200k,inc_50kto75k,inc_25kto50k,inc_175kto200k,
             #inc_100kto125k,inc_125kto150k,inc_150kto175k, inc_DtoA,inc_le25k) 
 
@@ -1283,7 +1271,7 @@ Significant variables: *onceintwoweeks*
 
 #dataset for analysis 
 newds<-workds_NA4[,aes_RPM]
-newds<-cbind(newds,female,inc_100kto125k,inc_125kto150k,rltnHHmem_acquaintances,onceintwoweeks)
+newds<-cbind(newds,female,inc_100kto125k,inc_125kto150k,rltnHHmem_acquaintances,weekly)
              #everyday, #onceamonth, #onceaweek,# onceinthreeweeks, # onceintwoweeks, 
              #threeormoretimesaweek, # twiceaweek, #leonceamonth
 
@@ -1354,8 +1342,8 @@ The final modEL structure is show below as Figure below. The summary statistics 
 
 #dataset for analysis 
 newds<-workds_NA4[,aes_RPM]
-newds<-cbind(newds,female,inc_100kto125k,inc_125kto150k,rltnHHmem_acquaintances,onceintwoweeks,biwalk.oncemonth)
-RPM.aes.vars<-c("female","inc_100kto125k","inc_125kto150k","rltnHHmem_acquaintances","onceintwoweeks","biwalk.oncemonth")             
+newds<-cbind(newds,female,inc_ge100k,rltnHHmem_acquaintances,onceintwoweeks,biwalk.oncemonth)
+RPM.aes.vars<-c("female","inc_ge100k","rltnHHmem_acquaintances","onceintwoweeks","biwalk.oncemonth")             
 newds<-newds[1:134,]
 
 model.RPM.aes.biwalk<-specifyModel(text = "#Factor Structure
@@ -1377,10 +1365,9 @@ female -> aes, fi1, NA
 female <-> female, err19, NA
 
 #income
-inc_100kto125k->aes, fi18, NA
-inc_125kto150k->aes, fi19, NA
-inc_100kto125k<-> inc_100kto125k, err34, NA
-inc_125kto150k<-> inc_125kto150k, err35, NA
+inc_ge100k->aes,fi22a, NA
+inc_ge100k<-> inc_ge100k,err34a, NA
+
 
 #relation with HHMEM
 rltnHHmem_acquaintances -> aes, fi46, NA
@@ -1718,18 +1705,30 @@ RPM.soc.vars<-c("biwalk.oncein2weeks")
 #dataset for analysis 
 newds<-workds_NA4[,c(att_RPM,aes_RPM,sat_RPM,soc_RPM)]
 RPM.vars<-unique(c(RPM.soc.vars,RPM.aes.vars,RPM.att.vars,RPM.sat.vars))
-newds<-cbind(newds,biwalk.oncein2weeks,female,inc_100kto125k,inc_125kto150k, rltnHHmem_acquaintances,onceintwoweeks, biwalk.oncemonth,  age_55to64,  age_45to54, notfromRoc, hhmem_5ormore, emp_ft_3, onceaweek, leonceamonth, bike, biwalk.none, biwalk.threeormoreaweek, biwalk.oncein3weeks, age_35to45, hhmem_2, emp_ft_1, rltnHHmem_family, threeormoretimesaweek, publictransit, biwalk.onceweek)
+
+#newds<-cbind(newds,biwalk.oncein2weeks,female,inc_ge100k, rltnHHmem_acquaintances,onceintwoweeks, biwalk.oncemonth,  age_55to64,  age_45to54, notfromRoc, hhmem_5ormore, emp_ft_3, onceaweek, leonceamonth, bike, biwalk.none, biwalk.threeormoreaweek, biwalk.oncein3weeks, age_35to45, hhmem_2, emp_ft_1, rltnHHmem_family, threeormoretimesaweek, publictransit, biwalk.onceweek)
+
+newds<-cbind(newds,
+             female,
+             inc_ge100k, 
+             rltnHHmem_acquaintances, rltnHHmem_family, 
+             emp_1ormore,
+             age_le45, age_45to65, 
+             notfromRoc,  
+             bike, publictransit, 
+             leonceamonth,   
+             biwalk.gtonceamonth)
 
 
 newds<-newds[1:134,]
 
-model.RPM.final<-specifyModel("model_RPM_v1.R") 
+model.RPM.final<-specifyModel("model_RPM_v3.R") 
 #fitting the model 
 fit.RPM.final<-sem::sem(model.RPM.final,data=newds) #data should contain only necessary variables.
 
-png("RPM_final.png", width = 4, height = 7, units = 'in', res = 2000)
-pathDiagram(fit.RPM.final,edge.labels = "both",style = "ram")
-dev.off()
-
-#semPaths(fit.RPM.sat.final,whatLabels = "est",rotation = 2)
+#png("RPM_final.png", width = 4, height = 7, units = 'in', res = 300)
+#pathDiagram(fit.RPM.final,edge.labels = "both",style = "ram")
+#dev.off()
+#
+semPaths(fit.RPM.final,whatLabels = "std",rotation = 2)
 summary(fit.RPM.final)
